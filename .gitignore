@@ -11,3 +11,6 @@ approximate_solution_methods/*
 model_free_batch_rl_algorithms/debug.py
 model_free_batch_rl_algorithms/debug_nn.py
 explore_continuous_results.py
+explore_results.py
+explore_safety_results.py
+exploration_utils.py
