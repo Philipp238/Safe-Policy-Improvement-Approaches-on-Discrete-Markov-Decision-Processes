@@ -15,3 +15,4 @@ explore_results.py
 explore_safety_results.py
 exploration_utils.py
 environment.yaml
+model_free_batch_rl_algorithms/*
