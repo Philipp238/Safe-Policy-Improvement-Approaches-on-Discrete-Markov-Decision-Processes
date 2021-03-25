@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import pandas as pd
 
+# This has to be the path to the SPPIB package (https://github.com/RomainLaroche/SPIBB)
 sys.path.append(r'C:\Users\phili\PycharmProjects\SPIBB')
 
 import garnets
