@@ -15,6 +15,9 @@ ACTION_TRANSLATOR = {
 
 
 class WetChicken:
+    # Implements the 2-dimensional discrete Wet Chicken benchmark from 'Efficient Uncertainty Propagation for
+    # Reinforcement Learning with Limited Data' by Alexander Hans and Steffen Udluft
+
     def __init__(self, length, width, max_turbulence, max_velocity, discrete=True):
         self.length = length
         self.width = width

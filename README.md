@@ -27,7 +27,7 @@ adv_approx_soft_spibb.fit()
 The `PiStar` class implements dynamic programming and should be used with the true MDP dynamics to compute the optimal
 policy.
 
-`wet_chicken_discrete/` contains the Wet Chicken benchmark, which is one of the two benchmarks used in 
+`wet_chicken_discrete/` contains the Wet Chicken benchmark [2], which is one of the two benchmarks used in 
 "Evaluation of Safe Policy Improvement by Soft Baseline Bootstrapping". The file `wet_chicken_discrete/dynamics.py`
 implements the dynamics of this benchmark and `wet_chicken_discrete/baseline_policy.py` implements different methods
 to compute a behavior policy. In my thesis, I only make use of the `'heuristic'` variant. 
