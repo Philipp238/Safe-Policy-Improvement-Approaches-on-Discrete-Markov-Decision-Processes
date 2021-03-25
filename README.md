@@ -25,7 +25,7 @@ adv_approx_soft_spibb = AdvApproxSoftSPIBB(pi_b, gamma, nb_states, nb_actions, d
 adv_approx_soft_spibb.fit()
 ````
 
-`wet_chicken_discrete/` contains the Wet Chicken benchmark one of the two Benchmarks used in the Master's thesis 
+`wet_chicken_discrete/` contains the Wet Chicken benchmark, which is one of the two benchmarks used in 
 "Evaluation of Safe Policy Improvement by Soft Baseline Bootstrapping". The file `wet_chicken_discrete/dynamics.py`
 implements the dynamics of this benchmark and `wet_chicken_discrete/baseline_policy.py` implements different methods
 to compute a behavior policy. In my thesis, I only make use of the `'heuristic'` variant. 
@@ -35,30 +35,31 @@ To run experiments using the algorithms implemented in `batch_rl_algorithms/` ru
 ``run_experiments.py wet_chicken_full.ini wet_chicken_results 1234 4 10``
 
 The `wet_chicken_full.ini` is the name of the config file used for this experiment, more about this later. 
-`wet_chicken_results` is the folder name, where the results are going to stored, `1234` is the seed for the experiment,
-`4` is the number of threads and `10` is the number of iterations performed per thread per algorithm.
-The config file has to be stored in the folder `experiments/` and contains parameters about:
+`wet_chicken_results` is the folder name, where the results are going to be stored, `1234` is the seed for the 
+experiment, `4` is the number of threads and `10` is the number of iterations performed per thread per algorithm.
+The previous mentioned config file has to be stored in the folder `experiments/` and contains parameters about:
 
 1. the experiment itself (storage path, which benchmark, speedup function etc.),
 2. the environment parameters,
 3. the behavior/baseline policy parameters and
 4. the algorithms and their hyper-parameters.
 
-These experiments can be conducted wither on the Wet Chicken benchmark or on the Random MDPs benchmark [[1]]. An example
+These experiments can be conducted either on the Wet Chicken benchmark or on the Random MDPs benchmark [1]. An example
 config file for the Random MDPs is given as `experiments/random_mdps_full.ini`. Before running the experiments, you
-have to create a file called `config.ini` (on the highest directory level) which contains the following:
+have to create a file called `paths.ini` (on the highest directory level) which contains the following:
 ````
 [PATHS]
 results_path = D:\results
 spibb_path = C:\users\dummy\SPIBB
 ````
-Where `results_path` should be the absolute path pointing to the place where the results should be stored (I exclude 
-this storage from the repository as the results are often huge (>1GB)). `spibb_path` is only necessary if you use
+Where `results_path` should be the absolute path pointing to the place where the results should be stored (I store
+the results outside of this repository as the results are often huge (>1GB)). `spibb_path` is only necessary if you use
 anything from https://github.com/RomainLaroche/SPIBB, which is the case if you choose the Random MDPs benchmark in your
 experiments or some of the tests in `auxiliary_tests/`. The `spibb_path` has to be the absolute path to a local copy
 of https://github.com/RomainLaroche/SPIBB.
 
-`auxiliary_tests/` contains 
+`auxiliary_tests/` contains complementary code for some tests described in 'Evaluation of Safe Policy Improvmenet using 
+Soft Baseline Bootstrapping'.
 
 
 ## References

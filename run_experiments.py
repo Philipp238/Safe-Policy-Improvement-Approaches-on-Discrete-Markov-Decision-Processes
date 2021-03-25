@@ -12,7 +12,7 @@ directory = os.path.dirname(os.path.expanduser(__file__))
 sys.path.append(directory)
 
 path_config = configparser.ConfigParser()
-path_config.read(os.path.join(directory, 'config.ini'))
+path_config.read(os.path.join(directory, 'paths.ini'))
 results_directory_absolute = path_config['PATHS']['results_path']
 
 config_name = sys.argv[1]

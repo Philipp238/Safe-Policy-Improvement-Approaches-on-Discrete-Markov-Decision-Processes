@@ -411,7 +411,7 @@ class RandomMDPsExperiment(Experiment):
 
     def _run_one_iteration(self):
         path_config = configparser.ConfigParser()
-        path_config.read(os.path.join(directory, 'config.ini'))
+        path_config.read(os.path.join(directory, 'paths.ini'))
         spibb_path = path_config['PATHS']['spibb_path']
         sys.path.append(spibb_path)
         import garnets
