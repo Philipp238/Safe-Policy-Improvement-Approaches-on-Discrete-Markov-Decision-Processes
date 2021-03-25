@@ -3,6 +3,7 @@ import sys
 import ast
 import time
 from distutils import util
+import configparser
 
 import numpy as np
 import pandas as pd
@@ -21,11 +22,7 @@ from batch_rl_algorithms.ramdp import RaMDP
 from batch_rl_algorithms.mbie import MBIE
 
 directory = os.path.dirname(os.path.expanduser(__file__))
-spibb_path = os.path.join(os.path.dirname(directory), 'SPIBB')
 
-sys.path.append(spibb_path)
-
-import garnets
 
 
 class Experiment:
@@ -383,12 +380,16 @@ class WetChickenExperiment(Experiment):
 
 
 class RandomMDPsExperiment(Experiment):
+
+
     fixed_params_exp_columns = ['seed', 'gamma', 'nb_states', 'nb_actions', 'nb_next_state_transition']
     variable_params_exp_columns = ['iteration', 'softmax_target_perf_ratio',
                                    'baseline_target_perf_ratio', 'baseline_perf', 'pi_rand_perf', 'pi_star_perf',
                                    'nb_trajectories']
 
     def _set_env_params(self):
+
+
         self.episodic = True
         self.gamma = float(self.experiment_config['ENV_PARAMETERS']['GAMMA'])
         self.nb_states = int(self.experiment_config['ENV_PARAMETERS']['nb_states'])
@@ -409,6 +410,12 @@ class RandomMDPsExperiment(Experiment):
         self.log = bool(util.strtobool(self.experiment_config['META']['log']))
 
     def _run_one_iteration(self):
+        path_config = configparser.ConfigParser()
+        path_config.read(os.path.join(directory, 'config.ini'))
+        spibb_path = path_config['PATHS']['spibb_path']
+        sys.path.append(spibb_path)
+        import garnets
+
         for baseline_target_perf_ratio in self.baseline_target_perf_ratios:
             print(f'Process with seed {self.seed} starting with baseline_target_perf_ratio {baseline_target_perf_ratio}'
                   f' out of {self.baseline_target_perf_ratios}')

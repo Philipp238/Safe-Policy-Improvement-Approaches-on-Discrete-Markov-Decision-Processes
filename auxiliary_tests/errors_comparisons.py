@@ -6,13 +6,14 @@ import pandas as pd
 import time
 
 from shutil import copyfile
+import configparser
 
-sys.path.append(r'C:\Users\phili\PycharmProjects\SPIBB')
-
-import garnets
-import spibb_utils
-import spibb
-import modelTransitions
+directory = os.path.dirname(os.path.expanduser(__file__))
+sys.path.append(directory)
+path_config = configparser.ConfigParser()
+path_config.read(os.path.join(directory, 'config.ini'))
+spibb_path = path_config['PATHS']['spibb_path']
+sys.path.append(spibb_path)
 
 from wet_chicken_discrete.dynamics import WetChicken
 from wet_chicken_discrete.baseline_policy import WetChickenBaselinePolicy
@@ -25,6 +26,12 @@ from batch_rl_algorithms.soft_spibb import ApproxSoftSPIBB, ExactSoftSPIBB, Lowe
 from batch_rl_algorithms.duipi import DUIPI
 from batch_rl_algorithms.ramdp import RaMDP
 from batch_rl_algorithms.mbie import MBIE
+
+import garnets
+import spibb_utils
+import spibb
+import modelTransitions
+
 
 if __name__ == '__main__':
     nb_iterations = 50

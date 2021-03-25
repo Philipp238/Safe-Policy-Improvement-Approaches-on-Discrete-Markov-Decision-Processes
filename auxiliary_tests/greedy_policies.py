@@ -4,12 +4,15 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import time
 
-from shutil import copyfile
+import configparser
 
-
-sys.path.append(r'C:\Users\phili\PycharmProjects\SPIBB')
+directory = os.path.dirname(os.path.expanduser(__file__))
+sys.path.append(directory)
+path_config = configparser.ConfigParser()
+path_config.read(os.path.join(directory, 'config.ini'))
+spibb_path = path_config['PATHS']['spibb_path']
+sys.path.append(spibb_path)
 
 import garnets
 import spibb_utils

@@ -4,7 +4,7 @@ This repository contains the code accompanying the Master's thesis "Evaluation o
 Improvement by Soft Baseline Bootstrapping" of Philipp Scholl (Technical University of Munich), which 
 investigates safe reinforcement learning
 by building on the paper "Safe Policy Improvement with Soft Baseline Bootstrapping" by Nadjahi 
-et al. [[1]](#1).
+et al. [[1]](#1) and their code https://github.com/RomainLaroche/SPIBB.
 
 The code is implemented in Python 3 and requires the packages specified in ``requirements.txt``.
 
@@ -28,36 +28,37 @@ adv_approx_soft_spibb.fit()
 `wet_chicken_discrete/` contains the Wet Chicken benchmark one of the two Benchmarks used in the Master's thesis 
 "Evaluation of Safe Policy Improvement by Soft Baseline Bootstrapping". The file `wet_chicken_discrete/dynamics.py`
 implements the dynamics of this benchmark and `wet_chicken_discrete/baseline_policy.py` implements different methods
-to compute a behavior policy. In my thesis, I only make use of the `'heuristic'` variant.
+to compute a behavior policy. In my thesis, I only make use of the `'heuristic'` variant. 
 
+To run experiments using the algorithms implemented in `batch_rl_algorithms/` run:
 
+``run_experiments.py wet_chicken_full.ini wet_chicken_results 1234 4 10``
+
+The `wet_chicken_full.ini` is the name of the config file used for this experiment, more about this later. 
+`wet_chicken_results` is the folder name, where the results are going to stored, `1234` is the seed for the experiment,
+`4` is the number of threads and `10` is the number of iterations performed per thread per algorithm.
+The config file has to be stored in the folder `experiments/` and contains parameters about:
+
+1. the experiment itself (storage path, which benchmark, speedup function etc.),
+2. the environment parameters,
+3. the behavior/baseline policy parameters and
+4. the algorithms and their hyper-parameters.
+
+These experiments can be conducted wither on the Wet Chicken benchmark or on the Random MDPs benchmark [[1]]. An example
+config file for the Random MDPs is given as `experiments/random_mdps_full.ini`. Before running the experiments, you
+have to create a file called `config.ini` (on the highest directory level) which contains the following:
+````
+[PATHS]
+results_path = D:\results
+spibb_path = C:\users\dummy\SPIBB
+````
+Where `results_path` should be the absolute path pointing to the place where the results should be stored (I exclude 
+this storage from the repository as the results are often huge (>1GB)). `spibb_path` is only necessary if you use
+anything from https://github.com/RomainLaroche/SPIBB, which is the case if you choose the Random MDPs benchmark in your
+experiments or some of the tests in `auxiliary_tests/`. The `spibb_path` has to be the absolute path to a local copy
+of https://github.com/RomainLaroche/SPIBB.
 
 `auxiliary_tests/` contains 
-
-
-## Commands
-
-To generate a dataset for the helicopter environment, run:
-
-`python baseline.py baseline/helicopter_env/ weights.pt --generate_dataset --dataset_size 1000`
-
-where ``baseline/helicopter_env/`` is the path to the baseline and ``weights.pt`` is the baseline filename. The dataset will be generated in ``baseline/helicopter_env/dataset`` by default. We have provided the baseline used in our experiment in `baseline/helicopter_env`. To train a new one, define the training parameters in a yaml file e.g. `config` and run:
-
-`ipython train.py -- --domain helicopter --config config`
-
-To train a policy on that dataset, define the training parameters in a yaml file e.g. `config_batch` (in particular, that file should contain the path to the baseline and dataset to use) and then run:
-
-`ipython train.py -- -o batch True --config config_batch`
-
-To specify different learning types or parameters, either change the `config_batch` file or pass options to the command line, e.g. `--options learning_type ramdp`, or `--options minimum_count 5` (see the file `config_batch.yaml` for the existing options). In particular, the learning_type parameter can be regular (ie DQN), pi_b (ie SPIBB-DQN), soft_sort (ie Soft-SPIBB-DQN) or ramdp.
-
-Results for the run will be saved in the dataset folder, in a csv file named `{algo_runid_parameter}`.
-
-We also provide a baseline for CartPole, use the following commands to train on that environment:
-
-`python baseline.py baseline/cartpole_env/ weights.pt --generate_dataset --dataset_size 1000`
-
-`ipython train.py -- -o batch True --config config_batch_cartpole --domain gym`.
 
 
 ## References
