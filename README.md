@@ -4,7 +4,7 @@ This repository contains the code accompanying the Master's thesis "Evaluation o
 Improvement by Soft Baseline Bootstrapping" of Philipp Scholl (Technical University of Munich), which 
 investigates safe reinforcement learning
 by building on the paper "Safe Policy Improvement with Soft Baseline Bootstrapping" by Nadjahi 
-et al. [[1]](#1) and their code https://github.com/RomainLaroche/SPIBB.
+et al. [1] and their code https://github.com/RomainLaroche/SPIBB.
 
 The code is implemented in Python 3 and requires the packages specified in ``requirements.txt``.
 
@@ -24,6 +24,8 @@ adv_approx_soft_spibb = AdvApproxSoftSPIBB(pi_b, gamma, nb_states, nb_actions, d
                                            episodic, R, delta, epsilon, 'hoeffding')
 adv_approx_soft_spibb.fit()
 ````
+The `PiStar` class implements dynamic programming and should be used with the true MDP dynamics to compute the optimal
+policy.
 
 `wet_chicken_discrete/` contains the Wet Chicken benchmark, which is one of the two benchmarks used in 
 "Evaluation of Safe Policy Improvement by Soft Baseline Bootstrapping". The file `wet_chicken_discrete/dynamics.py`
@@ -58,8 +60,8 @@ anything from https://github.com/RomainLaroche/SPIBB, which is the case if you c
 experiments or some of the tests in `auxiliary_tests/`. The `spibb_path` has to be the absolute path to a local copy
 of https://github.com/RomainLaroche/SPIBB.
 
-`auxiliary_tests/` contains complementary code for some tests described in 'Evaluation of Safe Policy Improvmenet using 
-Soft Baseline Bootstrapping'.
+`auxiliary_tests/` contains complementary code for some tests described in "Evaluation of Safe Policy Improvement using 
+Soft Baseline Bootstrapping".
 
 
 ## References

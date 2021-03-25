@@ -22,6 +22,8 @@ class SPIBB_abstract(BatchRLAlgorithm):
 
 
 class SPIBB(SPIBB_abstract):
+    # Code and algorithm from 'Safe Policy Improvement with Baseline Bootstrapping' by Romain Laroche, Paul Trichelair
+    # and Remi Tachet des Combes. (Their code is available under: https://github.com/RomainLaroche/SPIBB)
     NAME = 'SPIBB'
 
     def _policy_improvement(self):
@@ -34,6 +36,8 @@ class SPIBB(SPIBB_abstract):
 
 
 class Lower_SPIBB(SPIBB_abstract):
+    # Code and algorithm from 'Safe Policy Improvement with Baseline Bootstrapping' by Romain Laroche, Paul Trichelair
+    # and Remi Tachet des Combes. (Their code is available under: https://github.com/RomainLaroche/SPIBB)
     NAME = 'Lower-SPIBB'
 
     def _policy_improvement(self):

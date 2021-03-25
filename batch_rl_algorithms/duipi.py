@@ -4,6 +4,9 @@ from batch_rl_algorithms.batch_rl_algorithm import BatchRLAlgorithm
 
 
 class DUIPI(BatchRLAlgorithm):
+    # Algorithm implemented following 'Uncertainty Propagation for Efficient Exploration in Reinforcement Learning'
+    # by Alexander Hans and Steffen Udluft; a small modification has been added see the Master's thesis
+    # 'Evaluation of Safe Policy Improvement with Soft Baseline Bootstrapping'
     NAME = 'DUIPI'
 
     def __init__(self, pi_b, gamma, nb_states, nb_actions, data, R, episodic, bayesian, xi, alpha_prior=0.1,
@@ -61,7 +64,9 @@ class DUIPI(BatchRLAlgorithm):
 
     def _policy_improvement(self):
         q_uncertainty_and_mask_corrected = self.q - self.xi * np.sqrt(self.variance_q)
+        # The extra modification to avoid unobserved state-action pairs
         q_uncertainty_and_mask_corrected[~self.mask] = - np.inf
+
         best_action = np.argmax(q_uncertainty_and_mask_corrected, axis=1)
         for state in range(self.nb_states):
             d_s = np.minimum(1 / self.nb_it, 1 - self.pi[state, best_action[state]])

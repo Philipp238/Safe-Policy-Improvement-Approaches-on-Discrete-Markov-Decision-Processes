@@ -4,6 +4,8 @@ from batch_rl_algorithms.batch_rl_algorithm import BatchRLAlgorithm
 
 
 class RMin(BatchRLAlgorithm):
+    # Pessimistic offline adaption of the optimistic online algorithm R-MAX from 'R-max - A General Polynomial Time
+    # Algorithm for Near-Optimal Reinforcement Learning' from Ronen I. Brafman and Moshe Tennenholtz
     NAME = 'R_min'
 
     def __init__(self, pi_b, gamma, nb_states, nb_actions, data, R, N_wedge, episodic, zero_unseen=True, max_nb_it=5000,

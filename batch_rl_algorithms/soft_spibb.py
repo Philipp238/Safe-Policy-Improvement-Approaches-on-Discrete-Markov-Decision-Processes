@@ -189,6 +189,8 @@ class SoftSPIBB(BatchRLAlgorithm):
 
 
 class ApproxSoftSPIBB(SoftSPIBB):
+    # Code and algorithm from 'Safe Policy Improvement with Soft Baseline Bootstrapping' by Kimia Nadjahi, Romain
+    # Laroche and Remi Tachet des Combes. (Their code is available under: https://github.com/RomainLaroche/SPIBB)
     NAME = 'Approx-Soft-SPIBB'
 
     def _policy_improvement(self):
@@ -231,6 +233,8 @@ class ApproxSoftSPIBB(SoftSPIBB):
 
 
 class ExactSoftSPIBB(SoftSPIBB):
+    # Code and algorithm from 'Safe Policy Improvement with Soft Baseline Bootstrapping' by Kimia Nadjahi, Romain
+    # Laroche and Remi Tachet des Combes. (Their code is available under: https://github.com/RomainLaroche/SPIBB)
     NAME = 'Exact-Soft-SPIBB'
 
     def _policy_improvement(self):

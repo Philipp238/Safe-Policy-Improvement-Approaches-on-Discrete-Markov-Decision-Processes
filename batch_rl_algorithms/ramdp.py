@@ -4,6 +4,9 @@ from batch_rl_algorithms.batch_rl_algorithm import BatchRLAlgorithm
 
 
 class RaMDP(BatchRLAlgorithm):
+    # Algorithm from 'Safe policy improvement by minimizing robust baseline regret' by Marek Petrik, Yinlam Chow and
+    # Mohammad Ghavamzadeh, which is also equivalent to MBIE-EB from 'An analysis of model-based Interval
+    # Estimation for Markov Decision Processes' by Alexander L. Strehl and Michael L. Littman
     NAME = 'RaMDP'
 
     def __init__(self, pi_b, gamma, nb_states, nb_actions, data, R, episodic, kappa, zero_unseen=True, max_nb_it=5000,
