@@ -2,13 +2,42 @@ import numpy as np
 
 
 class BatchRLAlgorithm:
+    # Base class for all batch RL algorithms, which implements the general framework and the PE and PI step for
+    # Dynamic Programming following 'Reinforcement Learning - An Introduction' by Sutton and Barto and
+    # https://github.com/RomainLaroche/SPIBB. Additionally, it also implements the estimations of the transition
+    # probabilities and reward matrix and some validation checks.
     def __init__(self, pi_b, gamma, nb_states, nb_actions, data, R, episodic, zero_unseen=True, max_nb_it=5000,
                  checks=False, speed_up_dict=None):
+        """
+        :param pi_b: numpy matrix with shape (nb_states, nb_actions), such that pi_b(s,a) refers to the probability of
+        choosing action a in state s by the behavior policy
+        :param gamma: discount factor
+        :param nb_states: number of states of the MDP
+        :param nb_actions: number of actions available in each state
+        :param data: the data collected by the behavior policy, which should be a list of [state, action, next_state,
+         reward] sublists
+        :param R: reward matrix as numpy array with shape (nb_states, nb_states), assuming that the reward is deterministic w.r.t. the
+         previous and the next states
+        :param episodic: boolean variable, indicating whether the MDP is episodic (True) or non-episodic (False)
+        :param zero_unseen: boolean variable, indicating whether the estimated model should guess set all transition
+        probabilities to zero for a state-action pair which has never been visited (True) or to 1/nb_states (False)
+        :param max_nb_it: integer, indicating the maximal number of times the PE and PI step should be executed, if
+        convergence is not reached
+        :param checks: boolean variable indicating if different validity checks should be executed (True) or not
+        (False); this should be set to True for development reasons, but it is time consuming for big experiments
+        :param speed_up_dict: a dictionary containing pre-calculated quantities which can be reused by many different
+        algorithms, this should only be used for big experiments; for the standard algorithms this should only contain
+        the following:
+        'count_state_action': numpy array with shape (nb_states, nb_actions) indicating the number of times a s
+        tate-action pair has been visited
+        'count_state_action_state': numpy array with shape (nb_states, nb_actions, nb_states) indicating the number of
+        times a state-action-next-state triplet has been visited
+        """
         self.pi_b = pi_b
         self.gamma = gamma
         self.nb_states = nb_states
         self.nb_actions = nb_actions
-        self.data = data  # The observed data of the behavior policy, should be a list of [s, a, s', r]
+        self.data = data
         self.zero_unseen = zero_unseen
         self.episodic = episodic
         self.max_nb_it = max_nb_it
@@ -25,10 +54,18 @@ class BatchRLAlgorithm:
         self._initial_calculations()
 
     def _initial_calculations(self):
+        """
+        Starts all the calculations which can be done before the actual training.
+        """
         self._build_model()
         self._compute_R_state_action()
 
     def fit(self):
+        """
+        Starts the actual training by reiterating between self._policy_evaluation() and self._policy_improvement()
+        until convergence of the action-value function or the maximal number of iterations (self.max_nb_it) is reached.
+        :return:
+        """
         if self.checks:
             self._check_if_valid_transitions()
         old_q = np.ones([self.nb_states, self.nb_actions])
@@ -47,6 +84,9 @@ class BatchRLAlgorithm:
                 myfile.write(f"{self.NAME} is not converging. \n")
 
     def _count(self):
+        """
+        Counts the state-action pairs and state-action-triplets and stores them.
+        """
         if self.episodic:
             batch_trajectory = [val for sublist in self.data for val in sublist]
         else:
@@ -57,6 +97,9 @@ class BatchRLAlgorithm:
         self.count_state_action = np.sum(self.count_state_action_state, 2)
 
     def _build_model(self):
+        """
+        Estimates the transition probabilities from the given data.
+        """
         self.transition_model = self.count_state_action_state / self.count_state_action[:, :, np.newaxis]
         if self.zero_unseen:
             self.transition_model = np.nan_to_num(self.transition_model)
@@ -64,22 +107,25 @@ class BatchRLAlgorithm:
             self.transition_model[np.isnan(self.transition_model)] = 1. / self.nb_states
 
     def _compute_R_state_action(self):
+        """
+        Applies the estimated transition probabilities and the reward matrix with shape (nb_states, nb_states) to
+        estimate a new reward matrix in the shape (nb_states, nb_actions) such that self.R_state_action[s, a] is the
+        expected reward when choosing action a in state s in the estimated MDP.
+        """
         self.R_state_action = np.einsum('ijk,ik->ij', self.transition_model, self.R_state_state)
 
     def _policy_improvement(self):
-        '''
-        Updates the policy (Here: greedy update)
-        :return:
-        '''
+        """
+        Updates the current policy self.pi (Here: greedy update).
+        """
         self.pi = np.zeros([self.nb_states, self.nb_actions])
         for s in range(self.nb_states):
             self.pi[s, np.argmax(self.q[s, :])] = 1
 
     def _policy_evaluation(self):
-        '''
-        Computes q for self.pi
-        :return:
-        '''
+        """
+        Computes the action-value function for the current policy self.pi.
+        """
         nb_sa = self.nb_actions * self.nb_states
         M = np.eye(nb_sa) - self.gamma * np.einsum('ijk,kl->ijkl', self.transition_model, self.pi).reshape(nb_sa, nb_sa)
         self.q = np.linalg.solve(M, self.R_state_action.reshape(nb_sa)).reshape(self.nb_states, self.nb_actions)

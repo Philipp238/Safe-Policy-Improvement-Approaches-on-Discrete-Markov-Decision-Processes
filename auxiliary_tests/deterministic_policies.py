@@ -7,7 +7,10 @@ import pandas as pd
 
 import configparser
 
-directory = os.path.dirname(os.path.expanduser(__file__))
+# Set directory as the path to Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping
+# directory = os.path.dirname(os.path.expanduser(__file__))
+directory = r'C:\Users\phili\PycharmProjects\Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping'
+
 sys.path.append(directory)
 path_config = configparser.ConfigParser()
 path_config.read(os.path.join(directory, 'paths.ini'))
@@ -22,7 +25,7 @@ import modelTransitions
 from wet_chicken_discrete.dynamics import WetChicken
 
 
-def sample_greedy_policy(nb_states, nb_actions, bias=False):
+def sample_deterministic_policy(nb_states, nb_actions, bias=False):
     pi = np.zeros([nb_states, nb_actions])
     for state in range(nb_states):
         if ~ bias:
@@ -65,14 +68,14 @@ list_unbiased_wet_chicken = []
 for i in range(nb_samples):
     if i % 100000 == 0:
         print(f'{i} out of {nb_samples} done.')
-    pi_sample = sample_greedy_policy(nb_states, nb_actions, bias=False)
+    pi_sample = sample_deterministic_policy(nb_states, nb_actions, bias=False)
     list_unbiased_wet_chicken.append(spibb.policy_evaluation_exact(pi_sample, r_reshaped, P, gamma)[0][0])
 df_unbiased_wet_chicken = pd.DataFrame(data=list_unbiased_wet_chicken, columns=['Performance'])
 
 sns.set(font_scale=2)
 g = sns.FacetGrid(data=df_unbiased_wet_chicken)
 g.map(sns.ecdfplot, 'Performance')
-g.fig.suptitle(f'ECDF of the performance of sampled greedy policies on wet chicken')
+g.fig.suptitle(f'ECDF of the performance of sampled deterministic policies on wet chicken')
 plt.subplots_adjust(top=0.92, right=0.9, left=0.05, bottom=0.19)
 
 ### For RandomMDPs
@@ -114,7 +117,7 @@ pi_too_good = None
 for i in range(nb_samples):
     if i % 100000 == 0:
         print(f'{i} out of {nb_samples} done.')
-    pi_sample = sample_greedy_policy(nb_states, nb_actions, bias=False)
+    pi_sample = sample_deterministic_policy(nb_states, nb_actions, bias=False)
     list_unbiased_random_mdps.append(spibb.policy_evaluation_exact(pi_sample, r_reshaped, P, gamma)[0][0])
     if spibb.policy_evaluation_exact(pi_sample, r_reshaped, P, gamma)[0][0] > 1.5:
         pi_too_good = pi_sample
@@ -123,7 +126,7 @@ sns.set(font_scale=2)
 g = sns.FacetGrid(data=df_unbiased_random_mdps)
 g.map(sns.ecdfplot, 'Performance')
 g.fig.suptitle(
-    f'ECDF of the performance of sampled greedy policies on random MDPs with a good easter egg')
+    f'ECDF of the performance of sampled deterministic policies on Random MDPs with a good easter egg')
 plt.subplots_adjust(top=0.92, right=0.9, left=0.05, bottom=0.19)
 
 spibb.policy_evaluation_exact(pi_too_good, r_reshaped, P, gamma)[0]

@@ -5,11 +5,57 @@ from batch_rl_algorithms.batch_rl_algorithm import BatchRLAlgorithm
 
 
 class SoftSPIBB(BatchRLAlgorithm):
+    # Abstract base class for all Soft-SPIBB algorithms.
     NAME = 'abstract_soft_spibb_class'
 
     def __init__(self, pi_b, gamma, nb_states, nb_actions, data, R, error_kind, delta, epsilon, episodic,
                  zero_unseen=True, max_nb_it=5000, checks=False, speed_up_dict=None, g_max=None,
                  ensure_independence=False, allowed_correlation=0.01):
+        """
+        :param pi_b: numpy matrix with shape (nb_states, nb_actions), such that pi_b(s,a) refers to the probability of
+        choosing action a in state s by the behavior policy
+        :param gamma: discount factor
+        :param nb_states: number of states of the MDP
+        :param nb_actions: number of actions available in each state
+        :param data: the data collected by the behavior policy, which should be a list of [state, action, next_state,
+         reward] sublists
+        :param R: reward matrix with shape (nb_states, nb_states), assuming that the reward is deterministic w.r.t. the
+         previous and the next states
+        :param episodic: boolean variable, indicating whether the MDP is episodic (True) or non-episodic (False)
+        :param zero_unseen: boolean variable, indicating whether the estimated model should guess set all transition
+        probabilities to zero for a state-action pair which has never been visited (True) or to 1/nb_states (False)
+        :param max_nb_it: integer, indicating the maximal number of times the PE and PI step should be executed, if
+        convergence is not reached
+        :param checks: boolean variable indicating if different validity checks should be executed (True) or not
+        (False); this should be set to True for development reasons, but it is time consuming for big experiments
+        :param speed_up_dict: a dictionary containing pre-calculated quantities which can be reused by many different
+        algorithms, this should only be used for big experiments; for Approx-Soft-SPIBB, Exact-Soft-SPIBB and
+        Lower-Approx-Soft-SPIBB using error_kind='hoeffding' this should only contain the following:
+            'count_state_action': numpy array with shape (nb_states, nb_actions) indicating the number of times a s
+            tate-action pair has been visited
+            'count_state_action_state': numpy array with shape (nb_states, nb_actions, nb_states) indicating the number
+            of times a state-action-next-state triplet has been visited
+        If ensure_indepence=True it should contain additionally:
+            'augmented_count_state_action': numpy array with shape (nb_states, nb_actions) indicating the number of
+            times a state-action pair has been visited, after all returns were omitted such that the correlation is
+            below allowed_correlation
+        For the 1-Step versions and Advantageous-Approx-Soft-SPIBB one has to add to the original two elements:
+            'q_pi_b_est': monte carlo estimate of the action-value function as numpy array with shape (nb_states,
+            nb_actions)
+        For any Soft-SPIBB algorithm using error_kind='mpeb' one has to add to the two original elements the following:
+            'q_pi_b_est': monte carlo estimate of the action-value function as numpy array with shape (nb_states,
+            nb_actions)
+            'var_q': estimation of the variance of the monte carloe estimate fo the action-value function as numpy array
+            with shape (nb_states, nb_actions)
+        :param error_kind: String stating which error function should be used, 'hoeffding' and 'mpeb' are available
+        :param delta: hyper-parameter for all Soft-SPIBB algorithms
+        :param epsilon: hyper-parameter for all Soft-SPIBB algorithms
+        :param g_max: maximal return of the (centralized) MDP, only necessary if error_kind='mpeb'
+        :param ensure_independence: boolean variable indicating if some data should be ommited to ensure that the
+        correlation between two returns of the state-action pair does not surpass the allowed_correlation
+        :param allowed_correlation: positive float which is only necessary if ensure_independence is true and gives the
+        upper bound on the correlation between two return for one state-action pair in that case
+        """
         self.delta = delta
         self.epsilon = epsilon
         self.error_kind = error_kind
@@ -28,12 +74,18 @@ class SoftSPIBB(BatchRLAlgorithm):
         self.old_pi = None
 
     def _initial_calculations(self):
+        """
+        Starts all the calculations which can be done before the actual training.
+        """
         super()._initial_calculations()
         if not self.ensure_independence:
             self.augmented_count_state_action = self.count_state_action
         self._compute_errors()
 
     def _compute_errors(self):
+        """
+        Starts the computation of the error function.
+        """
         if self.error_kind == 'hoeffding':
             self.errors = self._compute_hoeffding_errors()
         elif self.error_kind == 'mpeb':
@@ -44,6 +96,9 @@ class SoftSPIBB(BatchRLAlgorithm):
 
     # Computes the errors in q for all state-action pairs using hoeffding
     def _compute_hoeffding_errors(self):
+        """
+        Computes the error function for all state-action pairs using Hoeffding's bound.
+        """
         errors = np.zeros((self.nb_states, self.nb_actions))
         if self.ensure_independence:
             if self.speed_up_dict:
@@ -69,6 +124,9 @@ class SoftSPIBB(BatchRLAlgorithm):
         return errors
 
     def _compute_q_pi_b_samples(self):
+        """
+        Computes all returns for each state-action pairs.
+        """
         self.q_samples = np.empty([self.nb_states, self.nb_actions], dtype=object)
         if self.ensure_independence:
             self.q_samples_time_steps = np.empty([self.nb_states, self.nb_actions], dtype=object)
@@ -95,6 +153,10 @@ class SoftSPIBB(BatchRLAlgorithm):
                 self._discard_q_pi_samples_to_ensure_independence()
 
     def _discard_q_pi_samples_to_ensure_independence(self):
+        """
+        Discards specific returns to ensure that the correlation between two of the same sate-action pair is below
+        self.allowed_correlation.
+        """
         self.augmented_count_state_action = np.zeros((self.nb_states, self.nb_actions))
         for state in range(self.nb_states):
             for action in range(self.nb_actions):
@@ -110,12 +172,18 @@ class SoftSPIBB(BatchRLAlgorithm):
                 self.q_samples[state, action] = self.q_samples[state, action][mask]
 
     def _compute_q_pi_b_est_from_samples(self):
+        """
+        Computes the mean of all returns for each state-action pair.
+        """
         self.q_pi_b_est = np.zeros([self.nb_states, self.nb_actions])
         for state in range(self.nb_states):
             for action in range(self.nb_actions):
                 self.q_pi_b_est[state, action] = np.mean(self.q_samples[state, action])
 
     def _compute_var_q_pi_b_est(self):
+        """
+        Computes the variance of all returns for each state-action pair.
+        """
         var_q = np.zeros([self.nb_states, self.nb_actions])
         for state in range(self.nb_states):
             for action in range(self.nb_actions):
@@ -124,6 +192,9 @@ class SoftSPIBB(BatchRLAlgorithm):
 
     # Computes the errors in q for all state-action pairs using mpeb
     def _compute_mpeb_errors(self):
+        """
+        Computes the error function for all state-action pairs using Maurer and Pontil's bound.
+        """
         if self.speed_up_dict:
             self.q_pi_b_est = self.speed_up_dict['q_pi_b_est']
             self.var_q = self.speed_up_dict['var_q']
@@ -178,6 +249,10 @@ class SoftSPIBB(BatchRLAlgorithm):
         return advantage
 
     def _one_step_algorithms(self):
+        """
+        Switches the optimization problem for the 1-step algorithms such that they are also theoretical safe, as there
+        is otherwise no reason to use only 1 iteration.
+        """
         if self.max_nb_it == 1:
             if self.error_kind == 'hoeffding' and self.NAME != AdvApproxSoftSPIBB.NAME:
                 if self.speed_up_dict:
@@ -194,6 +269,9 @@ class ApproxSoftSPIBB(SoftSPIBB):
     NAME = 'Approx-Soft-SPIBB'
 
     def _policy_improvement(self):
+        """
+        Updates the current policy self.pi.
+        """
         self._one_step_algorithms()
 
         pi = np.zeros([self.nb_states, self.nb_actions])
@@ -238,6 +316,10 @@ class ExactSoftSPIBB(SoftSPIBB):
     NAME = 'Exact-Soft-SPIBB'
 
     def _policy_improvement(self):
+        """
+        Updates the current policy self.pi.
+        """
+
         self._one_step_algorithms()
 
         pi = np.zeros([self.nb_states, self.nb_actions])
@@ -281,9 +363,15 @@ class ExactSoftSPIBB(SoftSPIBB):
 
 
 class LowerApproxSoftSPIBB(SoftSPIBB):
+    # Implements Lower-Approx-Soft-SPIBB developed in 'Evaluation of Safe Policy Improvement by Soft Baseline
+    # Bootstrapping' by Philipp Scholl.
     NAME = 'Lower-Approx-Soft-SPIBB'
 
     def _policy_improvement(self):
+        """
+        Updates the current policy self.pi.
+        """
+
         old_pi = self.pi.copy()
         pi = np.zeros([self.nb_states, self.nb_actions])
         pi_t = self.pi_b.copy()
@@ -333,11 +421,16 @@ class LowerApproxSoftSPIBB(SoftSPIBB):
 
 
 class AdvApproxSoftSPIBB(SoftSPIBB):
+    # Implements Adv-Approx-Soft-SPIBB developed in 'Evaluation of Safe Policy Improvement by Soft Baseline
+    # Bootstrapping' by Philipp Scholl.
     NAME = 'Adv-Approx-Soft-SPIBB'
 
     def _initial_calculations(self):
+        """
+        Starts all the calculations which can be done before the actual training.
+        """
         super()._initial_calculations()
-        if self.error_kind != 'e_min':
+        if self.error_kind != 'mpeb':
             if self.speed_up_dict:
                 self.q_pi_b_est = self.speed_up_dict['q_pi_b_est']
             else:
@@ -345,6 +438,10 @@ class AdvApproxSoftSPIBB(SoftSPIBB):
                 self._compute_q_pi_b_est_from_samples()
 
     def _policy_improvement(self):
+        """
+        Updates the current policy self.pi.
+        """
+
         pi = np.zeros([self.nb_states, self.nb_actions])
         pi_t = self.pi_b.copy()
         for s in range(self.nb_states):
