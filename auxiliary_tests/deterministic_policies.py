@@ -1,3 +1,5 @@
+# File to check manually the distribution of the performance of deterministic policies on the Wet Chicken and the
+# Random MDPs benchmark.
 import seaborn as sns
 import os
 import sys
@@ -8,7 +10,7 @@ import pandas as pd
 import configparser
 
 # Set directory as the path to Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping
-# directory = os.path.dirname(os.path.expanduser(__file__))
+# directory = os.path.dirname(os.path.dirname(os.path.expanduser(__file__)))
 directory = r'C:\Users\phili\PycharmProjects\Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping'
 
 sys.path.append(directory)

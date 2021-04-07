@@ -1,14 +1,13 @@
+# File to explore the difference between the error function relying on Hoeffding's bound and the one relying on the
+# bound of Maurer and Pontil.
 import os
 import sys
-
-import numpy as np
-import pandas as pd
-import time
-
-from shutil import copyfile
 import configparser
 
-directory = os.path.dirname(os.path.expanduser(__file__))
+import numpy as np
+
+
+directory = os.path.dirname(os.path.dirname(os.path.expanduser(__file__)))
 sys.path.append(directory)
 path_config = configparser.ConfigParser()
 path_config.read(os.path.join(directory, 'paths.ini'))
@@ -18,19 +17,8 @@ sys.path.append(spibb_path)
 from wet_chicken_discrete.dynamics import WetChicken
 from wet_chicken_discrete.baseline_policy import WetChickenBaselinePolicy
 
-from batch_rl_algorithms.basic_rl import Basic_rl
-from batch_rl_algorithms.pi_star import PiStar
-from batch_rl_algorithms.spibb import SPIBB, Lower_SPIBB
-from batch_rl_algorithms.r_min import RMin
-from batch_rl_algorithms.soft_spibb import ApproxSoftSPIBB, ExactSoftSPIBB, LowerApproxSoftSPIBB, AdvApproxSoftSPIBB
-from batch_rl_algorithms.duipi import DUIPI
-from batch_rl_algorithms.ramdp import RaMDP
-from batch_rl_algorithms.mbie import MBIE
-
-import garnets
+from batch_rl_algorithms.soft_spibb import ApproxSoftSPIBB
 import spibb_utils
-import spibb
-import modelTransitions
 
 
 if __name__ == '__main__':
@@ -85,18 +73,12 @@ if __name__ == '__main__':
 
     approx_soft_spibb = ApproxSoftSPIBB(pi_b=pi_b, gamma=gamma, nb_states=nb_states, nb_actions=nb_actions,
                                         data=trajectory, R=R, delta=delta, epsilon=epsilon,
-                                        error_kind='mpeb', episodic=episodic, checks=False)
+                                        error_kind='mpeb', episodic=episodic, checks=False, g_max=40)
 
     e_mpeb = np.nan_to_num(approx_soft_spibb.errors, nan=0, posinf=0)
 
-    approx_soft_spibb = ApproxSoftSPIBB(pi_b=pi_b, gamma=gamma, nb_states=nb_states, nb_actions=nb_actions,
-                                        data=trajectory, R=R, delta=delta, epsilon=epsilon,
-                                        error_kind='min', episodic=episodic, checks=False)
+    print(f'L1 distance (interpreted as long vector instead of matrix) : {np.sum(np.abs(e_hoeffding - e_mpeb))}')
 
-    e_min = np.nan_to_num(approx_soft_spibb.errors, nan=0, posinf=0)
-
-    print(f'L1 distance (interpreted as long vector instead of matrix) : {np.sum(np.abs(e_hoeffding - e_min))}')
-
-    count_state_action = approx_soft_spibb.count_state_action
+    # count_state_action = approx_soft_spibb.count_state_action
 
     print(f'Hi')

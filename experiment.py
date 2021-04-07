@@ -24,8 +24,8 @@ from batch_rl_algorithms.mbie import MBIE
 directory = os.path.dirname(os.path.expanduser(__file__))
 
 
-
 class Experiment:
+    # Class to implement general batch RL experiments
     results = []
     nb_iterations = None
     fixed_params_exp_list = None
@@ -34,6 +34,13 @@ class Experiment:
     algorithms_columns = ['method', 'hyperparam', 'method_perf', 'run_time']
 
     def __init__(self, experiment_config, seed, nb_iterations, machine_specific_experiment_directory):
+        """
+        :param experiment_config: config file which describes the experiment, see, for example,
+        experiments/wet_chicken_full.ini
+        :param seed: seed for this experiment
+        :param nb_iterations: number of iterations of this experiment
+        :param machine_specific_experiment_directory: the directory in which the results will be stored
+        """
         self.seed = seed
         np.random.seed(seed)
         self.experiment_config = experiment_config
@@ -56,12 +63,19 @@ class Experiment:
         self._set_env_params()
 
     def run(self):
+        """
+        Runs the experiment.
+        """
         for iteration in range(self.nb_iterations):
             self.to_append_run = self.fixed_params_exp_list + [iteration]
             self._run_one_iteration()
             self._save(iteration)
 
     def _save(self, iteration):
+        """
+        Saves the result after each iteration.
+        :param iteration: iteration + 1 iterations are done, usage only for naming
+        """
         results_df = pd.DataFrame(self.results,
                                   columns=self.fixed_params_exp_columns + self.variable_params_exp_columns + self.algorithms_columns + self.safety_columns)
         filename = self.filename_header + f"_up_to_iteration_{iteration + 1}.csv"
@@ -73,6 +87,10 @@ class Experiment:
                                    self.filename_header + f"_up_to_iteration_{iteration}.csv"))
 
     def set_up_speed_up_dict(self):
+        """
+        Makes use of self.speed_up_dict, according to the rules in the algorithms in batch_rl_algorithms/, if
+        self.speed_up=True.
+        """
         if self.speed_up:
             self.speed_up_dict = {
                 'count_state_action': None,
@@ -102,16 +120,22 @@ class Experiment:
             self.speed_up_dict = None
 
     def _set_env_params(self):
+
         pass
 
     def _run_one_iteration(self, params_env):
         pass
 
     def _compute_speed_up_dict(self):
+        """
+        Sets the speed_up_dict up, when a new data set was generated.
+        :return:
+        """
         if 'var_q' in self.speed_up_dict.keys():
             preparer = ApproxSoftSPIBB(pi_b=self.pi_b, gamma=self.gamma, nb_states=self.nb_states,
                                        nb_actions=self.nb_actions, data=self.data, R=self.R_state_state, epsilon=0,
-                                       error_kind='mpeb', episodic=self.episodic, delta=1, max_nb_it=0, g_max=self.g_max,
+                                       error_kind='mpeb', episodic=self.episodic, delta=1, max_nb_it=0,
+                                       g_max=self.g_max,
                                        ensure_independence=self.theoretical_safety)
             self.speed_up_dict['var_q'] = preparer.var_q
             self.speed_up_dict['q_pi_b_est'] = preparer.q_pi_b_est
@@ -130,6 +154,9 @@ class Experiment:
         self.speed_up_dict['count_state_action_state'] = preparer.count_state_action_state
 
     def _run_algorithms(self):
+        """
+        Runs all algorithms for one data set.
+        """
         if self.speed_up:
             self._compute_speed_up_dict()
         for key in self.algorithms_dict.keys():
@@ -150,6 +177,10 @@ class Experiment:
                 self._run_mbie(key)
 
     def _run_duipi(self, key):
+        """
+        Runs DUIPI for one data set, with all hyper-parameters and in bayesian and frequentist mode.
+        :param key: DUIPI.NAME
+        """
         for bayesian_notifier in self.algorithms_dict[key].keys():
             bayesian = bayesian_notifier == 'bayesian'
             if self.safety_deltas:
@@ -182,6 +213,10 @@ class Experiment:
                     self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _run_spibb(self, key):
+        """
+        Runs SPIBB or Lower-SPIBB for one data set, with all hyper-parameters.
+        :param key: SPIBB.NAME or Lower_SPIBB.NAME, depending on which algorithm is supposed to be run
+        """
         for N_wedge in self.algorithms_dict[key]['hyperparam']:
             spibb = algorithm_name_dict[key](pi_b=self.pi_b, gamma=self.gamma, nb_states=self.nb_states,
                                              nb_actions=self.nb_actions, data=self.data, R=self.R_state_state,
@@ -197,6 +232,12 @@ class Experiment:
             self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _run_soft_spibb(self, key):
+        """
+        Runs Approx-Soft-SPIBB, Exact-Soft-SPIBB, Adv-Approx-Soft-SPIBB or Lower-Approx-Soft-SPIBB for one data set,
+        with all hyper-parameters.
+        :param key: ApproxSoftSPIBB.NAME, ExactSoftSPIBB.NAME, LowerApproxSoftSPIBB.NAME or AdvApproxSoftSPIBB.NAME,
+        depending on which algorithm is supposed to be run
+        """
         error_kinds = self.algorithms_dict[key]['error_kinds']
         one_steps = self.algorithms_dict[key]['1-step']
         if self.safety_deltas:
@@ -238,6 +279,10 @@ class Experiment:
                             self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _run_basic_rl(self, key):
+        """
+        Runs Basic RL for one data set.
+        :param key: BasicRL.NAME
+        """
         basic_rl = algorithm_name_dict[key](pi_b=self.pi_b, gamma=self.gamma, nb_states=self.nb_states,
                                             nb_actions=self.nb_actions, data=self.data, R=self.R_state_state,
                                             episodic=self.episodic, speed_up_dict=self.speed_up_dict)
@@ -252,6 +297,10 @@ class Experiment:
         self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _run_r_min(self, key):
+        """
+        Runs R-MIN for one data set, with all hyper-parameters.
+        :param key: RMIN.NAME
+        """
         for N_wedge in self.algorithms_dict[key]['hyperparam']:
             r_min = algorithm_name_dict[key](pi_b=self.pi_b, gamma=self.gamma, nb_states=self.nb_states,
                                              nb_actions=self.nb_actions, data=self.data, R=self.R_state_state,
@@ -267,6 +316,10 @@ class Experiment:
             self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _run_mbie(self, key):
+        """
+        Runs MBIE for one data set, with all hyper-parameters.
+        :param key: MBIE.NAME
+        """
         if self.safety_deltas:
             deltas = self.safety_deltas
         else:
@@ -290,6 +343,10 @@ class Experiment:
                 self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _run_ramdp(self, key):
+        """
+        Runs RaMDP for one data set, with all hyper-parameters.
+        :param key: RaMDP.NAME
+        """
         for kappa in self.algorithms_dict[key]['hyperparam']:
             ramdp = algorithm_name_dict[key](pi_b=self.pi_b, gamma=self.gamma, nb_states=self.nb_states,
                                              nb_actions=self.nb_actions, data=self.data, R=self.R_state_state,
@@ -305,14 +362,22 @@ class Experiment:
             self.results.append(self.to_append + [method, hyperparam, method_perf, run_time])
 
     def _policy_evaluation_exact(self, pi):
+        """
+        Evaluates policy pi exactly.
+        :param pi: policy as numpy array with shape (nb_states, nb_actions)
+        """
         return policy_evaluation_exact(pi, self.R_state_action, self.P, self.gamma)[0][0]
 
 
 class WetChickenExperiment(Experiment):
+    # Inherits from the base class Experiment to implement the Wet Chicken experiment specifically.
     fixed_params_exp_columns = ['seed', 'gamma', 'length', 'width', 'max_turbulence', 'max_velocity', 'baseline_method',
                                 'pi_rand_perf', 'pi_star_perf']
 
     def _set_env_params(self):
+        """
+        Reads in all parameters necessary from self.experiment_config to set up the Wet Chicken experiment.
+        """
         self.episodic = False
         self.gamma = float(self.experiment_config['ENV_PARAMETERS']['GAMMA'])
         self.length = int(self.experiment_config['ENV_PARAMETERS']['LENGTH'])
@@ -354,6 +419,10 @@ class WetChickenExperiment(Experiment):
                                                 'length_trajectory']
 
     def _run_one_iteration(self):
+        """
+        Runs one iteration on the Wet Chicken benchmark, so iterates through different baseline and data set parameters
+        and then starts the computation for each algorithm.
+        """
         for epsilon_baseline in self.epsilons_baseline:
             print(f'Process with seed {self.seed} starting with epsilon_baseline {epsilon_baseline} out of'
                   f' {self.epsilons_baseline}')
@@ -369,6 +438,13 @@ class WetChickenExperiment(Experiment):
                     self._run_algorithms()
 
     def generate_batch(self, nb_steps, env, pi):
+        """
+        Generates a data batch for a non-episodic MDP.
+        :param nb_steps: number of steps in the data batch
+        :param env: environment to be used to generate the batch on
+        :param pi: policy to be used to generate the data as numpy array with shape (nb_states, nb_actions)
+        :return: data batch as a list of sublists of the form [state, action, next_state, reward]
+        """
         trajectory = []
         state = env.get_state_int()
         for _ in np.arange(nb_steps):
@@ -380,16 +456,16 @@ class WetChickenExperiment(Experiment):
 
 
 class RandomMDPsExperiment(Experiment):
-
-
+    # Inherits from the base class Experiment to implement the Wet Chicken experiment specifically.
     fixed_params_exp_columns = ['seed', 'gamma', 'nb_states', 'nb_actions', 'nb_next_state_transition']
     variable_params_exp_columns = ['iteration', 'softmax_target_perf_ratio',
                                    'baseline_target_perf_ratio', 'baseline_perf', 'pi_rand_perf', 'pi_star_perf',
                                    'nb_trajectories']
 
     def _set_env_params(self):
-
-
+        """
+        Reads in all parameters necessary from self.experiment_config to set up the Random MDPs experiment.
+        """
         self.episodic = True
         self.gamma = float(self.experiment_config['ENV_PARAMETERS']['GAMMA'])
         self.nb_states = int(self.experiment_config['ENV_PARAMETERS']['nb_states'])
@@ -410,6 +486,10 @@ class RandomMDPsExperiment(Experiment):
         self.log = bool(util.strtobool(self.experiment_config['META']['log']))
 
     def _run_one_iteration(self):
+        """
+        Runs one iteration on the Random MDPs benchmark, so iterates through different baseline and data set parameters
+        and then starts the computation for each algorithm.
+        """
         path_config = configparser.ConfigParser()
         path_config.read(os.path.join(directory, 'paths.ini'))
         spibb_path = path_config['PATHS']['spibb_path']
@@ -454,6 +534,10 @@ class RandomMDPsExperiment(Experiment):
                 self._run_algorithms()
 
     def _set_easter_egg(self, reward):
+        """
+        Sets up the easter egg if one is used (also possible to use a bad easter egg with negative reward).
+        :param reward: the reward of the easter egg
+        """
         # Randomly pick a second terminal state and update model parameters
         potential_final_states = [s for s in range(self.nb_states) if s != self.garnet.final_state and s != 0]
         self.easter_egg = np.random.choice(potential_final_states)
@@ -481,8 +565,14 @@ class RandomMDPsExperiment(Experiment):
             print(f"Optimal perf in {property_easter_egg} easter egg environment:\t\t\t" + str(self.pi_star_perf))
             print(f"Baseline perf in {property_easter_egg} easter egg environment:\t\t\t" + str(self.pi_b_perf))
 
-    # Generates a batch of trajectories
     def generate_batch(self, nb_trajectories, env, pi, easter_egg=None, max_steps=50):
+        """
+        Generates a data batch for an episodic MDP.
+        :param nb_steps: number of steps in the data batch
+        :param env: environment to be used to generate the batch on
+        :param pi: policy to be used to generate the data as numpy array with shape (nb_states, nb_actions)
+        :return: data batch as a list of sublists of the form [state, action, next_state, reward]
+        """
         trajectories = []
         for _ in np.arange(nb_trajectories):
             nb_steps = 0
@@ -502,7 +592,8 @@ class RandomMDPsExperiment(Experiment):
 
 def policy_evaluation_exact(pi, r, p, gamma):
     """
-    Evaluate policy by taking the inverse
+    Evaluate policy (from https://github.com/RomainLaroche/SPIBB, but changed to use
+    np.linalg.solve instead of the inverse for a higher stability)
     Args:
       pi: policy, array of shape |S| x |A|
       r: the true rewards, array of shape |S| x |A|
@@ -522,7 +613,7 @@ def policy_evaluation_exact(pi, r, p, gamma):
     v = np.linalg.solve((np.eye(p_pi.shape[0]) - gamma * p_pi), r_pi)
     return v, r + gamma * np.einsum('i, jki->jk', v, p)
 
-
+# Translate the names from the algorithms to the class.
 algorithm_name_dict = {SPIBB.NAME: SPIBB, Lower_SPIBB.NAME: Lower_SPIBB,
                        ApproxSoftSPIBB.NAME: ApproxSoftSPIBB, ExactSoftSPIBB.NAME: ExactSoftSPIBB,
                        AdvApproxSoftSPIBB.NAME: AdvApproxSoftSPIBB,

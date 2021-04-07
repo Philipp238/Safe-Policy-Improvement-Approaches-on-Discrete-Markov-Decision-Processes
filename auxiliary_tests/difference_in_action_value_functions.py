@@ -1,10 +1,16 @@
+# File to check that the two different action-value functions (MC estimate and the action-value function in the
+# estimated MDP) are actually different functions, see Section 3.2.2 in "Evaluation of Safe Policy Improvement with
+# Soft Baseline Bootstrapping" by Philipp Scholl.
 import os
 import sys
 import numpy as np
 import pandas as pd
 import configparser
 
-directory = os.path.dirname(os.path.expanduser(__file__))
+# Set directory as the path to Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping
+# directory = os.path.dirname(os.path.dirname(os.path.expanduser(__file__)))
+directory = r'C:\Users\phili\PycharmProjects\Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping'
+
 sys.path.append(directory)
 path_config = configparser.ConfigParser()
 path_config.read(os.path.join(directory, 'paths.ini'))
@@ -54,13 +60,13 @@ for ratio in ratios:
         trajectories, batch_traj = spibb_utils.generate_batch(nb_trajectories, garnet, pi_b)
 
         # Computation of the transition errors
-        # These are the e_q
-        # errors = spibb.compute_errors(nb_states, nb_actions, delta, batch_traj)
+
         model = modelTransitions.ModelTransitions(batch_traj, nb_states, nb_actions)
         reward_model = spibb_utils.get_reward_model(model.transitions, reward_current)
+        # q_pi_b_est is the MC estimation of the action-value function
         q_pi_b_est = spibb_utils.compute_q_pib_est_episodic(gamma=gamma, nb_actions=nb_actions, nb_states=nb_states,
                                                             batch=trajectories)
-
+        # q_m_hat is the action-value function in the estimated MDP.
         _, q_m_hat = spibb.policy_evaluation_exact(pi_b, reward_model, model.transitions, gamma)
 
         distance = np.linalg.norm(q_pi_b_est - q_m_hat, ord=1)

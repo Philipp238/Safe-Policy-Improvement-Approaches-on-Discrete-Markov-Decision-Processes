@@ -1,10 +1,15 @@
+# File to check manually Assumption 1 from "Safe Policy Improvement by Soft Baseline Bootstrapping" from Nadjahi et al.
+# on the Random MDPs benchmark.
 import os
 import sys
 import numpy as np
 import pandas as pd
 import configparser
 
-directory = os.path.dirname(os.path.expanduser(__file__))
+# Set directory as the path to Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping
+# directory = os.path.dirname(os.path.dirname(os.path.expanduser(__file__)))
+directory = r'C:\Users\phili\PycharmProjects\Evaluation-of-Safe-Policy-Improvement-with-Baseline-Bootstrapping'
+
 sys.path.append(directory)
 path_config = configparser.ConfigParser()
 path_config.read(os.path.join(directory, 'paths.ini'))
@@ -13,7 +18,6 @@ sys.path.append(spibb_path)
 
 import garnets
 import spibb_utils
-import spibb
 
 nb_trajectories_list = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]
 delta = 0.05
@@ -29,6 +33,7 @@ env_type = 1  # 1 for one terminal state, 2 for two terminal states
 
 self_transitions = 0
 
+
 def compute_errors_p(nb_states, nb_actions, delta, batch_traj, unvisited=np.inf):
     count_state_action = np.zeros((nb_states, nb_actions))
     errors = np.zeros((nb_states, nb_actions))
@@ -40,9 +45,11 @@ def compute_errors_p(nb_states, nb_actions, delta, batch_traj, unvisited=np.inf)
                 errors[state, action] = unvisited
             else:
                 errors[state, action] = np.sqrt(
-                    2*(np.log(2*(nb_states*nb_actions*2**nb_actions)/delta))/count_state_action[state, action]
+                    2 * (np.log(2 * (nb_states * nb_actions * 2 ** nb_actions) / delta)) / count_state_action[
+                        state, action]
                 )
     return errors
+
 
 results = []
 
@@ -91,10 +98,12 @@ for ratio in ratios:
         print(
             f'For ratio {ratio} and {nb_trajectories} trajectories, {failed} out of '
             f'{nb_state_action_pairs} state_action pairs failed Assumption 1. ')
-            # f'(Unvisited state action pairs: {nb_not_visited_state_action_pairs})')
+        # f'(Unvisited state action pairs: {nb_not_visited_state_action_pairs})')
     results.append(results_traj)
 
-
 results_df = pd.DataFrame(index=ratios, columns=nb_trajectories_list, data=results)
+
+# To generate a heatmap from the results
 import seaborn as sns
+
 sns.heatmap(results_df)
