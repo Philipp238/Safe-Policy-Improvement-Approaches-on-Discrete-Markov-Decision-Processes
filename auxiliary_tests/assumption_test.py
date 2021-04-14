@@ -105,5 +105,12 @@ results_df = pd.DataFrame(index=ratios, columns=nb_trajectories_list, data=resul
 
 # To generate a heatmap from the results
 import seaborn as sns
+import matplotlib.pyplot as plt
 
-sns.heatmap(results_df)
+sns.set(font_scale=3)
+plt.subplots_adjust(bottom=0.2)
+
+ax = sns.heatmap(results_df)
+ax.set_title('Heatmap of the number of state-action pairs failing Assumption 1')
+ax.set_ylabel('Behavior performance ratio')
+ax.set_xlabel('Number of trajectories')

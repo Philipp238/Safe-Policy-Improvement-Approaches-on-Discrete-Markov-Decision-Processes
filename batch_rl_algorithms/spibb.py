@@ -49,7 +49,7 @@ class SPIBB_abstract(BatchRLAlgorithm):
 
     def _compute_mask(self):
         """
-        Computes a boolean mask indicating whether a state-action pair has been visited at least N_wedge times.
+        Computes a boolean mask indicating whether a state-action pair has been more than N_wedge times.
         """
         self.mask = self.count_state_action > self.N_wedge
 
