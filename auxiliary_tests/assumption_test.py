@@ -25,7 +25,7 @@ ratios = [0.1, 0.3, 0.5, 0.7, 0.9]  # [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0
 
 seed = 1234
 np.random.seed(seed)
-gamma = 0.7
+gamma = 0.6
 nb_states = 50
 nb_actions = 4
 nb_next_state_transition = 4
