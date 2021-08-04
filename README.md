@@ -1,7 +1,6 @@
 ## Prerequisites
 
-This repository contains the code accompanying the Master's thesis "Evaluation of Safe Policy 
-Improvement by Soft Baseline Bootstrapping" of Philipp Scholl (Technical University of Munich), which 
+This repository contains the code accompanying the paper "Enhancements of Safe Policy Improvement" (authors anononymous due to reviewing requirements), which 
 investigates safe reinforcement learning
 by building on the paper "Safe Policy Improvement with Soft Baseline Bootstrapping" by Nadjahi 
 et al. [1] and their code https://github.com/RomainLaroche/SPIBB.
