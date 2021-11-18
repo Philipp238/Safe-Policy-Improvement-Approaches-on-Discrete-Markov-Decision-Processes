@@ -1,9 +1,9 @@
 ## Prerequisites
 
-This repository contains the code accompanying the paper "Safe Policy Improvement Approaches on Discrete Markov Decision Processes" (authors anononymous due to reviewing requirements), which 
+This repository contains the code accompanying the paper "Safe Policy Improvement Approaches on Discrete Markov Decision Processes" by Philipp Scholl, Felix Dietrich, Clemens Otte, and Steffen Udluft (accepted but not published yet) and the master's thesis "Evaluation of Safe Policy Improvement with Soft Baseline Bootstrapping" by Philipp Scholl [1], which 
 investigates safe reinforcement learning
 by building on the paper "Safe Policy Improvement with Soft Baseline Bootstrapping" by Nadjahi 
-et al. [1] and their code https://github.com/RomainLaroche/SPIBB.
+et al. [2] and their code https://github.com/RomainLaroche/SPIBB.
 
 The code is implemented in Python 3 and requires the packages specified in ``requirements.txt``.
 
@@ -26,7 +26,7 @@ adv_approx_soft_spibb.fit()
 The `PiStar` class implements dynamic programming and should be used with the true MDP dynamics to compute the optimal
 policy.
 
-`wet_chicken_discrete/` contains the Wet Chicken benchmark [2], which is one of the two benchmarks used in 
+`wet_chicken_discrete/` contains the Wet Chicken benchmark [3], which is one of the two benchmarks used in 
 "Evaluation of Safe Policy Improvement by Soft Baseline Bootstrapping". The file `wet_chicken_discrete/dynamics.py`
 implements the dynamics of this benchmark and `wet_chicken_discrete/baseline_policy.py` implements different methods
 to compute a behavior policy. In my thesis, I only make use of the `'heuristic'` variant. 
@@ -45,7 +45,7 @@ The previous mentioned config file has to be stored in the folder `experiments/`
 3. the behavior/baseline policy parameters and
 4. the algorithms and their hyper-parameters.
 
-These experiments can be conducted either on the Wet Chicken benchmark or on the Random MDPs benchmark [1]. An example
+These experiments can be conducted either on the Wet Chicken benchmark or on the Random MDPs benchmark [2]. An example
 config file for the Random MDPs is given as `experiments/random_mdps_full.ini`. Before running the experiments, you
 have to create a file called `paths.ini` (on the highest directory level) which contains the following:
 ````
@@ -65,12 +65,14 @@ Soft Baseline Bootstrapping".
 
 ## References
 
-[1] K. Nadjahi, R. Laroche, R. Tachet des Combes. *Safe
+[1] P. Scholl. *Evaluation of Safe Policy Improvement with Soft Baseline Bootstrapping*. Master's thesis. Technical University of Munich. Germany. 2021.
+
+[2] K. Nadjahi, R. Laroche, R. Tachet des Combes. *Safe
 			Policy Improvement with Soft Baseline Bootstrapping*. Proceedings of the 2019
 		European Conference on Machine Learning and Principles and Practice of Knowledge
 		Discovery in Databases (ECML-PKDD). 2019.
 		
-[2] Alexander Hans and Steffen Udluft. *Efficient
+[3] Alexander Hans and Steffen Udluft. *Efficient
 			Uncertainty Propagation for Reinforcement Learning with Limited Data*.
 		International Conference on Artificial Neural Networks. Springer. 2009. pp.
 		70–79.
