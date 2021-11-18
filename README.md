@@ -1,6 +1,6 @@
 ## Prerequisites
 
-This repository contains the code accompanying the paper "Safe Policy Improvement Approacheson Discrete Markov Decision Processes" (authors anononymous due to reviewing requirements), which 
+This repository contains the code accompanying the paper "Safe Policy Improvement Approaches on Discrete Markov Decision Processes" (authors anononymous due to reviewing requirements), which 
 investigates safe reinforcement learning
 by building on the paper "Safe Policy Improvement with Soft Baseline Bootstrapping" by Nadjahi 
 et al. [1] and their code https://github.com/RomainLaroche/SPIBB.
