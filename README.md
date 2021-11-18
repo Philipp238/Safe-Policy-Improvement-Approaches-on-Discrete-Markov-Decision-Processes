@@ -12,7 +12,7 @@ The code is implemented in Python 3 and requires the packages specified in ``req
 The `batch_rl_algorithms/` folder is the main work of this repository containing every batch RL algorithm
 considered in this thesis. The abstract base class is written in `batch_rl_algorithms/batch_rl_algorithm.py` 
 and the actual algorithms are distributed over the whole folder. They should be used by initializing them
-with a batch of data, a behavior policy used to collect this data and the corresponding hyper-parameters.
+with a batch of data, a behavior policy used to collect this data and the algorithm specific hyper-parameters.
 Additionally, it is necessary to provide basic information about the MDP, e.g. the number of actions and states and
 whether is is an episodic MDP. During the initialization, the algorithm will calculate every quantity it needs
 in the actual training phase, for example, the estimates of the transition probabilities. The training is started
